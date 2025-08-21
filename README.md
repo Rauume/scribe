@@ -2,16 +2,16 @@
 Simple, reliable, distraction free writer to nudge you towards a better life story - by surfacing your receipts, one day at a time.
 
 > [!TIP]  
-> This is the base configuration of Scribe, to serve one straight forward, important use case: it turns the Scribe platform into a simple and reliable short message writer (simple by design). It works very well as is.
-> 
-> However, if you wish, you can go beyond this and make this human-machine/ human-computer interface truly your own.
->
-> The hardware is capable, the design is easily adaptable, and the firmware is easy to develop/ scale in whichever direction your imagination leads you towards!
-> I'm excited to see what you come up with!
+> This repo is forked from the original Scribe by [UrbanCircles](https://github.com/UrbanCircles/scribe)
 
-Base Scribe: a simple, reliable, open-source system that helps you capture the meaningful moments of your life. It leverages thermal printing to write a tangible log of your life's story, daily achievements, thoughts, or memories on a continuous roll of paper. It's designed to be a quiet companion that nudges you to live more intentionally.
+Scribe: a simple way to track todo lists and information with physical receipts.
 
-This project is born from the idea of "bringing receipts" for the life you lead/ towards the life you want to lead. It's about creating a physical artifact of your journey. It is highly hackable, adaptable and scalable to fit your needs and wants.
+## Todo:
+ - [x] Move to platformio project
+ - [x] Support for `Seeed Studio XIAO ESP32C3` and `Cashino CSN-A5` thermal printer
+ - [ ] Implement markdown-style document formatting (Headers, etc.)
+ - [ ] Improve workflow for mobile and desktop
+ 
 
 ## Features of the "out-of-the-box" configuration (v1)
 - **Thermal Printing:** Clean, permanent-enough tactile records - no mess, no dried ink
@@ -29,8 +29,8 @@ This project is born from the idea of "bringing receipts" for the life you lead/
 
 ## BOM
 
-- D1 mini board (any Arduino board will do, but you will have to adjust the sketch)
-- CSN-A4L thermal printer (any serial thermal printer might do, although I haven't tested for that - you may need to adjust power and pinout)
+- ESP32 C3 (any ESP/Arduino board will do, but you will have to adjust the code)
+- CSN-A4L/CSN-A5 thermal printer (any serial thermal printer might do, although I haven't tested for that - you may need to adjust power and pinout)
 - Paper rolls (printer comes preloaded with one, and it'll last ages - here, you're looking for 57.5±0.5mm width and 30mm max diameter)
 
 - 3D printer for the body (you may need some glue to fix the parts together - no screws required)
