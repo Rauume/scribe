@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="bg-gray-50 text-gray-900">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,73 +8,119 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script defer>
+		const maxCharacters = 200;
+		const formReturnTimer = 1500;
+		let textArea;
+		let receiptForm;
+		let thankScreen;
+
+		// Setup
+		window.onload = function () {
+			textArea = document.getElementById('message');
+			receiptForm = document.getElementById('receipt-form');
+			thankScreen = document.getElementById('thank-you');
+			textArea.maxLength = 200; // Set here to ensure it matches the variable.
+			
+			document.addEventListener('keydown', handleKeyPress);
+		}
+
+		function showThankyou() {
+			// Hide main form
+			receiptForm.classList.add('hidden');
+			thankScreen.classList.remove('hidden');
+
+			// Back to main form after timer
+			setTimeout(function () {
+				receiptForm.classList.remove('hidden');
+				thankScreen.classList.add('hidden');
+				textArea.focus(); // Autofocus on text area
+				textArea.placeholder = textArea.value;
+				textArea.value = "";
+			}, formReturnTimer);
+
+			confetti({
+				particleCount: 100,
+				spread: 70,
+				origin: { y: 0.6 },
+			});
+		}
+
     function handleInput(el) {
       const counter = document.getElementById('char-counter');
-      const remaining = 200 - el.value.length;
+			const remaining = maxCharacters - el.value.length;
       counter.textContent = `${remaining} characters left`;
       counter.classList.toggle('text-red-500', remaining <= 20);
     }
+
     function handleSubmit(e) {
       e.preventDefault();
       const formData = new FormData(e.target);
+			
       fetch('/submit', {
         method: 'POST',
         body: formData
       }).then(() => {
-        const form = document.getElementById('receipt-form');
-        const message = document.getElementById('thank-you');
-        form.classList.add('hidden');
-        message.classList.remove('hidden');
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-        });
-      });
-    }
-    function handleKeyPress(e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        document.getElementById('receipt-form').dispatchEvent(new Event('submit'));
+				showThankyou();
+			});
+		}
+		
+		function handleKeyPress(event)
+		{
+			// Allows user to 'recover' and modify the last message by pressing right arrow
+			if (event.key === 'ArrowRight') {
+				if (textArea.value === "") {
+					textArea.value = textArea.placeholder;
       }
     }
+		};
+
   </script>
 </head>
+
 <body class="flex flex-col min-h-screen justify-between items-center py-12 px-4 font-sans">
-  <main class="w-full max-w-md text-center">
+	<main class="w-full max-w-md text-center animate-fade-in">
+
     <h1 class="text-3xl font-semibold mb-10 text-gray-900 tracking-tight">Life Receipt:</h1>
-    <form id="receipt-form" onsubmit="handleSubmit(event)" action="/submit" method="post" class="bg-white shadow-2xl rounded-3xl p-8 space-y-6 border border-gray-100">
-      <textarea
-        name="message"
-        maxlength="200"
-        oninput="handleInput(this)"
-        onkeypress="handleKeyPress(event)"
-        placeholder="Type your receipt…"
+
+		<form id="receipt-form" onsubmit="handleSubmit(event)" action="/submit" method="post"
+			class="bg-white shadow-2xl rounded-3xl p-8 space-y-6 border border-gray-100">
+			<textarea id="message" name="message" oninput="handleInput(this)" placeholder="Type your receipt…"
         class="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent resize-none text-gray-800 placeholder-gray-400"
-        rows="4"
-        required
-        autofocus
-      ></textarea>
+				rows="4" required autofocus enterkeyhint="enter"></textarea>
       <div id="char-counter" class="text-sm text-gray-500 text-right">200 characters left</div>
-      <button type="submit" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
+			<button type="submit"
+				class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
         Send
       </button>
     </form>
+
     <div id="thank-you" class="hidden text-gray-700 font-semibold text-xl mt-8 animate-fade-in">
       🎉 Receipt submitted. You did it!
     </div>
+
   </main>
   <footer class="text-sm text-gray-400 mt-16">
-    Designed with love by <a href="https://urbancircles.club" target="_blank" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 underline decoration-gray-300 hover:decoration-gray-500 underline-offset-2">Peter / Urban Circles</a>
+		Designed with love by <a href="https://urbancircles.club" target="_blank"
+			class="text-gray-500 hover:text-gray-700 transition-colors duration-200 underline decoration-gray-300 hover:decoration-gray-500 underline-offset-2">Peter
+			/ Urban Circles</a>
   </footer>
   <style>
     @keyframes fade-in {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+			from {
+				opacity: 0;
+				transform: translateY(8px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
     }
+
     .animate-fade-in {
       animation: fade-in 0.6s ease-out forwards;
     }
   </style>
 </body>
+
 </html>
