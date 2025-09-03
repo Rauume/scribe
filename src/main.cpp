@@ -5,6 +5,9 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+#include "md4c.h"
+#include "md_printer_parse.h"
+
 // === Function Declarations ===
 void connectToWiFi();
 void setupWebServer();
@@ -34,8 +37,8 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds, 60000);
 AsyncWebServer server(80);
 
 // === Printer Setup ===
-HardwareSerial printer(1);
-const int TX_PIN = 21;	   // TX pin to printer RX
+HardwareSerial &printer = Serial1;
+const int TX_PIN = 7; // TX pin to printer RX
 const int maxCharsPerLine = 32;
 
 // === Storage for form data ===
@@ -167,7 +170,7 @@ void handleSubmit(AsyncWebServerRequest *request)
 		currentReceipt.hasData = true;
 
 		Serial.println("=== New Receipt Received ===");
-		Serial.println("Message: " + currentReceipt.message);
+		Serial.println("Message: \n" + currentReceipt.message);
 		Serial.println("Time: " + currentReceipt.timestamp);
 		Serial.println("============================");
 
@@ -284,26 +287,23 @@ void initializePrinter()
 	// printer.write(250); // Heating interval
 
 	// Enable 180° rotation (which also reverses the line order)
-	printer.write(0x1B);
-	printer.write('{');
-	printer.write(0x01); // ESC { 1
+	// printer.write(0x1B);
+	// printer.write('{');
+	// printer.write(0x01); // ESC { 1
 
 	Serial.println("Printer initialised");
 }
 
 void printReceipt()
 {
-	Serial.println("Printing receipt...");
-
-	// Print wrapped message first (appears at bottom after rotation)
-	printWrappedUpsideDown(currentReceipt.message);
-
-	// Print header last (appears at top after rotation)
-	setInverse(true);
+	// Print header first, with underline
+	printer.write(0x1B); printer.write(0x2D); printer.write(0x02);
 	printLine(currentReceipt.timestamp);
-	setInverse(false);
+	printer.write(0x1B); printer.write(0x21); printer.write(0x00); // Reset to default font
 
-	// Advance paper
+	// Run the MD parser. This handles the printing codes and formatting.
+	dispatchMDParser(currentReceipt.message.c_str(), printer);
+
 	advancePaper(2);
 
 	Serial.println("Receipt printed successfully");
@@ -322,7 +322,7 @@ void printServerInfo()
 	Serial.println("Printing server info on thermal printer...");
 
 	String serverInfo = "Server started at " + WiFi.localIP().toString();
-	printWrappedUpsideDown(serverInfo);
+	printLine(serverInfo);
 
 	setInverse(true);
 	printLine("PRINTER SERVER READY");
